@@ -1,4 +1,62 @@
-#Import the Customer_Churn dataset before running the code
+---
+title: "Business Intelligence Project"
+author: "korn"
+date: "23/10/23"
+output:
+  github_document: 
+    toc: yes
+    toc_depth: 4
+    fig_width: 6
+    fig_height: 4
+    df_print: default
+editor_options:
+  chunk_output_type: console
+---
+
+# Student Details
+
++---------------------------------------------------+---------------------------------------------+
+| **Student ID Numbers and Names of Group Members** | 1.  134644 - C - Sebastian Muramara         |
+|                                                   |                                             |
+|                                                   | 2.  136675 - C - Bernard Otieno             |
+|                                                   |                                             |
+|                                                   | 3.  131589 - C - Agnes Anyango              |
+|                                                   |                                             |
+|                                                   | 4.  131582 - C - Njeri Njuguna              |
+|                                                   |                                             |
+|                                                   | 5.  136009 - C- Sera Ndabari                |
++---------------------------------------------------+---------------------------------------------+
+| **GitHub Classroom Group Name**                   | Korn                                        |
++---------------------------------------------------+---------------------------------------------+
+| **Course Code**                                   | BBT4206                                     |
++---------------------------------------------------+---------------------------------------------+
+| **Course Name**                                   | Business Intelligence II                    |
++---------------------------------------------------+---------------------------------------------+
+| **Program**                                       | Bachelor of Business Information Technology |
++---------------------------------------------------+---------------------------------------------+
+| **Semester Duration**                             | 21^st^ August 2023 to 28^th^ November 2023  |
++---------------------------------------------------+---------------------------------------------+
+
+# Setup Chunk
+
+**Note:** the following KnitR options have been set as the global defaults: <BR> `knitr::opts_chunk$set(echo = TRUE, warning = FALSE, eval = TRUE, collapse = FALSE, tidy = TRUE)`.
+
+More KnitR options are documented here <https://bookdown.org/yihui/rmarkdown-cookbook/chunk-options.html> and here <https://yihui.org/knitr/options/>.
+
+```{r setup, include=FALSE}
+library(formatR)
+knitr::opts_chunk$set(
+  warning = FALSE,
+  collapse = FALSE
+)
+
+```
+
+## LAB 6
+
+## STEP 1. INSTALL PACKAGES
+
+```{r packages}
 
 # STEP 1. Install and Load the Required Packages ----
 
@@ -9,6 +67,7 @@ if (require("ggplot2")) {
   install.packages("ggplot2", dependencies = TRUE,
                    repos = "https://cloud.r-project.org")
 }
+
 
 ## caret ----
 if (require("caret")) {
@@ -57,7 +116,15 @@ if (require("dplyr")) {
   install.packages("dplyr", dependencies = TRUE,
                    repos = "https://cloud.r-project.org")
 }
-#CLASSIFICATION
+
+```
+
+## STEP 2. LOAD THE DATASET
+
+####Daily_Demand_Forecasting_Orders dataset----
+
+```{r Dataset}
+##CLASSIFICATION
 ####BreastCancer dataset----
 ## Load the dataset ----
 data(BreastCancer)
@@ -65,9 +132,16 @@ View(BreastCancer)
 summary(BreastCancer)
 ## removing ID column since its not needed for classification
 df <- subset(BreastCancer, select = -Id )
-#remove missing data
 BreastCancer_no_na <- na.omit(df)
 # RMSE, R Squared, and MAE ---
+##Split the dataset ----
+
+
+```
+
+##Split the dataset ----
+
+```{r splitting dataset}
 ##Split the dataset ----
 BreastCancer_freq <- BreastCancer_no_na$Class
 cbind(frequency =
@@ -78,27 +152,11 @@ train_index <- sample(1:dim(BreastCancer_no_na)[1], 10) # nolint: seq_linter.
 BreastCancer_train <- BreastCancer_no_na[train_index, ]
 BreastCancer_test <- BreastCancer_no_na[-train_index, ]
 
-## Train the Model ----
-# ApplClass bootstrapping with 1,000 repetitions
-train_control <- trainControl(method = "boot", number = 1000)
-BreastCancer_model_lm <-
-  train(Class ~ ., data = BreastCancer_train,
-        na.action = na.omit, method = "glm", metric = "Accuracy",
-        trControl = train_control)
+```
 
-BreastCancer_freq <- BreastCancer_no_na$Class
-cbind(frequency =
-        table(BreastCancer_freq),
-      percentage = prop.table(table(BreastCancer_freq)) * 100)
-## 1.c. Split the dataset ----
-# Define a 75:25 train:test data split of the dataset.
-# That is, 75% of the original data will be used to train the model and
-# 25% of the original data will be used to test the model.
-train_index <- createDataPartition(BreastCancer_no_na$Class,
-                                   p = 0.75,
-                                   list = FALSE)
-BreastCancer_train <- BreastCancer_no_na[train_index, ]
-BreastCancer_test <- BreastCancer_no_na[-train_index, ]
+## Train the Model ----
+
+```{r Training }
 
 ## 1.d. Train the Model ----
 # We apply the 5-fold cross validation resampling method
@@ -110,7 +168,11 @@ BreastCancer_model_glm <-
         metric = "Accuracy", trControl = train_control)
 
 print(BreastCancer_model_glm)
+```
 
+## Display the different Model Performances ----
+
+```{r model performance}
 
 predictions <- predict(BreastCancer_model_glm, BreastCancer_test[, 1:9])
 confusion_matrix <-
@@ -210,17 +272,19 @@ BreastCancer_model_cart <- train(Class ~ ., data = BreastCancer_no_na, method = 
 # The results show that a cp value of ≈ 0 resulted in the lowest
 # LogLoss value. The lowest logLoss value is ≈ 0.46.
 print(BreastCancer_model_cart)
+```
 
+# STEP 2.b) Customer_Churn dataset----
 
-### REGRESSION
-
-####Customer_Churn dataset----
-### Load the dataset ---
+```{r Load the dataset}
 library(readr)
-Customer_Churn <- read_csv("data/Customer_Churn.csv")
+Customer_Churn <- read_csv("../data/Customer_Churn.csv")
 View(Customer_Churn)
-#data(Customer_Churn)
+```
 
+## Building the regression model---
+
+```{r}
 ### Building the regression model---
 model1 <- lm(Churn ~., data = Customer_Churn)
 model2 <- lm(Churn ~. -Age, data = Customer_Churn)
@@ -266,13 +330,4 @@ glance(model1) %>%
 ### Metrics for model 2---
 glance(model2) %>%
   dplyr::select(adj.r.squared, sigma, AIC, BIC, p.value)
-
-#The two models have exactly the samed adjusted R2 (0.445), meaning that they are 
-#equivalent in explaining the outcome, here Churn score.
-#Additionally, they have the same amount of residual standard error (RSE or sigma = 0.271).
-#However, model 2 is more simple than model 1 because it incorporates less variables.
-#All things equal, the simple model is always better in statistics.
-
-#The BIC of model 2 is lower than that of the model 1.
-#The model with the lowest AIC and BIC score is preferred.
-
+```
